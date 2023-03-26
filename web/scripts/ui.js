@@ -116,6 +116,77 @@ function dragElement(dragEl, settings) {
 		},
 	});
 
+	function ensureInBounds() {
+		newPosX = Math.min(document.body.clientWidth - dragEl.clientWidth, Math.max(0, dragEl.offsetLeft));
+		newPosY = Math.min(document.body.clientHeight - dragEl.clientHeight, Math.max(0, dragEl.offsetTop));
+
+		console.log(newPosX, newPosY)
+
+		positionElement();
+	}
+
+	function positionElement() {
+		const halfWidth = document.body.clientWidth / 2;
+		const halfHeight = document.body.clientHeight / 2;
+
+		const anchorRight = newPosX + dragEl.clientWidth / 2 > halfWidth;
+		const anchorBottom = newPosY + dragEl.clientHeight / 2 > halfHeight;
+
+		// set the element's new position:
+		if (anchorRight) {
+			dragEl.style.left = "unset";
+			dragEl.style.right = document.body.clientWidth - newPosX - dragEl.clientWidth + "px";
+		} else {
+			dragEl.style.left = newPosX + "px";
+			dragEl.style.right = "unset";
+		}
+		if (anchorBottom) {
+			dragEl.style.top = "unset";
+			dragEl.style.bottom = document.body.clientHeight - newPosY - dragEl.clientHeight + "px";
+		} else {
+			dragEl.style.top = newPosY + "px";
+			dragEl.style.bottom = "unset";
+		}
+
+		if (savePos) {
+			localStorage.setItem(
+				"Comfy.MenuPosition",
+				JSON.stringify({
+					left: dragEl.style.left,
+					right: dragEl.style.right,
+					top: dragEl.style.top,
+					bottom: dragEl.style.bottom,
+				})
+			);
+		}
+	}
+
+	function restorePos() {
+		let pos = localStorage.getItem("Comfy.MenuPosition");
+		if (pos) {
+			pos = JSON.parse(pos);
+			dragEl.style.left = pos.left;
+			dragEl.style.right = pos.right;
+			dragEl.style.top = pos.top;
+			dragEl.style.bottom = pos.bottom;
+			ensureInBounds();
+		}
+	}
+
+	let savePos = undefined;
+	settings.addSetting({
+		id: "Comfy.MenuPosition",
+		name: "Save menu position",
+		type: "boolean",
+		defaultValue: savePos,
+		onChange(value) {
+			if (savePos === undefined && value) {
+				restorePos();
+			}
+			savePos = value;
+		},
+	});
+
 	function dragMouseDown(e) {
 		e = e || window.event;
 		e.preventDefault();
@@ -146,7 +217,9 @@ function dragElement(dragEl, settings) {
 	}
 
 	window.addEventListener("resize", () => {
+		if (dragEl.classList.contains("comfy-menu-manual-pos")) {
 			ensureInBounds();
+		}
 	});
 
 	function closeDragElement() {
@@ -394,15 +467,16 @@ export class ComfyUI {
 				onclick: () => app.queuePrompt(0, this.batchCount),
 			}),
 			$el("div", {}, [
-				$el("label", { innerHTML: "Extra Options"}, [
-					$el("input", { type: "checkbox",
+				$el("label", { innerHTML: "Extra options" }, [
+					$el("input", {
+						type: "checkbox",
 						onchange: (i) => {
-							document.getElementById('extraOptions').style.display = i.srcElement.checked ? "block" : "none";
-							this.batchCount = i.srcElement.checked ? document.getElementById('batchCountInputRange').value : 1;
-							document.getElementById('autoQueueCheckbox').checked = false;
-						}
-					})
-				])
+							document.getElementById("extraOptions").style.display = i.srcElement.checked ? "block" : "none";
+							this.batchCount = i.srcElement.checked ? document.getElementById("batchCountInputRange").value : 1;
+							document.getElementById("autoQueueCheckbox").checked = false;
+						},
+					}),
+				]),
 			]),
 			$el("div", { id: "extraOptions", style: { width: "100%", display: "none" } }, [
 				$el("label", { innerHTML: "Batch count" }, [
@@ -434,9 +508,6 @@ export class ComfyUI {
 						checked: false,
 						title: "automatically queue prompt when the queue size hits 0",
 					}),
-					$el("input", { id: "autoQueueCheckbox", type: "checkbox", checked: false, title: "automatically queue prompt when the queue size hits 0",
-					}),
-					$el("button", { textContent: "Skip Queue to\nProcess Next", onclick: () => app.queuePrompt(-1, this.batchCount) }),
 				]),
 			]),
 			$el("div.comfy-menu-btns", [
