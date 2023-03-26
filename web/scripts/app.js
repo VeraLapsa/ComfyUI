@@ -443,9 +443,62 @@ class ComfyApp {
                 this.selected_group = orig_selected_group;
             }
 
-            return res;
-        };
-    }
+			return res;
+		};
+	}
+
+	/**
+	 * Handle keypress
+	 *
+	 * Ctrl + M mute/unmute selected nodes
+	 */
+	#addProcessKeyHandler() {
+		const self = this;
+		const origProcessKey = LGraphCanvas.prototype.processKey;
+		LGraphCanvas.prototype.processKey = function(e) {
+			const res = origProcessKey.apply(this, arguments);
+
+			if (res === false) {
+				return res;
+			}
+
+			if (!this.graph) {
+				return;
+			}
+
+			var block_default = false;
+
+			if (e.target.localName == "input") {
+				return;
+			}
+
+			if (e.type == "keydown") {
+				// Ctrl + M mute/unmute
+				if (e.keyCode == 77 && e.ctrlKey) {
+					if (this.selected_nodes) {
+						for (var i in this.selected_nodes) {
+							if (this.selected_nodes[i].mode === 2) { // never
+								this.selected_nodes[i].mode = 0; // always
+							} else {
+								this.selected_nodes[i].mode = 2; // never
+							}
+						}
+					}
+					block_default = true;
+				}
+			}
+
+			this.graph.change();
+
+			if (block_default) {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				return false;
+			}
+
+			return res;
+		};
+	}
 
     /**
      * Draws group header bar
@@ -490,14 +543,15 @@ class ComfyApp {
         };
     }
 
-    /**
-     * Draws node highlights (executing, drag drop) and progress bar
-     */
-    #addDrawNodeHandler() {
-        const orig = LGraphCanvas.prototype.drawNodeShape;
-        const self = this;
-        LGraphCanvas.prototype.drawNodeShape = function (node, ctx, size, fgcolor, bgcolor, selected, mouse_over) {
-            const res = orig.apply(this, arguments);
+	/**
+	 * Draws node highlights (executing, drag drop) and progress bar
+	 */
+	#addDrawNodeHandler() {
+		const origDrawNodeShape = LGraphCanvas.prototype.drawNodeShape;
+		const self = this;
+
+		LGraphCanvas.prototype.drawNodeShape = function (node, ctx, size, fgcolor, bgcolor, selected, mouse_over) {
+			const res = origDrawNodeShape.apply(this, arguments);
 
             let color = null;
             if (node.id === +self.runningNodeId) {
@@ -549,9 +603,24 @@ class ComfyApp {
                 }
             }
 
-            return res;
-        };
-    }
+			return res;
+		};
+
+		const origDrawNode = LGraphCanvas.prototype.drawNode;
+		LGraphCanvas.prototype.drawNode = function (node, ctx) {
+			var editor_alpha = this.editor_alpha;
+
+			if (node.mode === 2) { // never
+				this.editor_alpha = 0.4;
+			}
+
+			const res = origDrawNode.apply(this, arguments);
+
+			this.editor_alpha = editor_alpha;
+
+			return res;
+		};
+	}
 
     /**
      * Handles updates from the API socket
@@ -622,7 +691,8 @@ class ComfyApp {
         document.getElementById("app-content").prepend(canvasEl);
         // document.body.prepend(canvasEl);
 
-        this.#addProcessMouseHandler();
+		this.#addProcessMouseHandler();
+		this.#addProcessKeyHandler();
 
         this.graph = new LGraph();
         const canvas = (this.canvas = new LGraphCanvas(canvasEl, this.graph));
@@ -874,13 +944,18 @@ class ComfyApp {
         for (const node of this.graph.computeExecutionOrder(false)) {
             const n = workflow.nodes.find((n) => n.id === node.id);
 
-            if (node.isVirtualNode) {
-                // Don't serialize frontend only nodes but let them make changes
-                if (node.applyToGraph) {
-                    node.applyToGraph(workflow);
-                }
-                continue;
-            }
+			if (node.isVirtualNode) {
+				// Don't serialize frontend only nodes but let them make changes
+				if (node.applyToGraph) {
+					node.applyToGraph(workflow);
+				}
+				continue;
+			}
+
+			if (node.mode === 2) {
+				// Don't serialize muted nodes
+				continue;
+			}
 
             const inputs = {};
             const widgets = node.widgets;
@@ -915,11 +990,23 @@ class ComfyApp {
                 }
             }
 
-            output[String(node.id)] = {
-                inputs,
-                class_type: node.comfyClass,
-            };
-        }
+			output[String(node.id)] = {
+				inputs,
+				class_type: node.comfyClass,
+			};
+		}
+
+		// Remove inputs connected to removed nodes
+
+		for (const o in output) {
+			for (const i in output[o].inputs) {
+				if (Array.isArray(output[o].inputs[i])
+					&& output[o].inputs[i].length === 2
+					&& !output[output[o].inputs[i][0]]) {
+					delete output[o].inputs[i];
+				}
+			}
+		}
 
         return { workflow, output };
     }
