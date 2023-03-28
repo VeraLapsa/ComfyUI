@@ -31,7 +31,7 @@ class PromptServer():
     def __init__(self, loop):
         PromptServer.instance = self
 
-        mimetypes.init(); 
+        mimetypes.init();
         mimetypes.types_map['.js'] = 'application/javascript; charset=utf-8'
         self.prompt_queue = None
         self.loop = loop
@@ -54,7 +54,7 @@ class PromptServer():
                 # Reusing existing session, remove old
                 self.sockets.pop(sid, None)
             else:
-                sid = uuid.uuid4().hex      
+                sid = uuid.uuid4().hex
 
             self.sockets[sid] = ws
 
@@ -64,7 +64,7 @@ class PromptServer():
                 # On reconnect if we are the currently executing client send the current node
                 if self.client_id == sid and self.last_node_id is not None:
                     await self.send("executing", { "node": self.last_node_id }, sid)
-                    
+
                 async for msg in ws:
                     if msg.type == aiohttp.WSMsgType.ERROR:
                         print('ws connection closed with exception %s' % ws.exception())
@@ -92,7 +92,7 @@ class PromptServer():
 
             if not os.path.exists(upload_dir):
                 os.makedirs(upload_dir)
-            
+
             post = await request.post()
             image = post.get("image")
 
@@ -111,7 +111,7 @@ class PromptServer():
 
                 with open(filepath, "wb") as f:
                     f.write(image.file.read())
-                
+
                 return web.json_response({"name" : filename})
             else:
                 return web.Response(status=400)
@@ -137,7 +137,7 @@ class PromptServer():
 
                 if os.path.isfile(file):
                     return web.FileResponse(file, headers={"Content-Disposition": f"filename=\"{filename}\""})
-                
+
             return web.Response(status=404)
 
         @routes.get("/prompt")
@@ -147,18 +147,24 @@ class PromptServer():
         @routes.get("/object_info")
         async def get_object_info(request):
             out = {}
-            for x in nodes.NODE_CLASS_MAPPINGS:
-                obj_class = nodes.NODE_CLASS_MAPPINGS[x]
+            for class_key in nodes.NODE_CLASS_MAPPINGS:
+                obj_class = nodes.NODE_CLASS_MAPPINGS[class_key]
                 info = {}
                 info['input'] = obj_class.INPUT_TYPES()
                 info['output'] = obj_class.RETURN_TYPES
                 info['output_name'] = obj_class.RETURN_NAMES if hasattr(obj_class, 'RETURN_NAMES') else info['output']
-                info['name'] = x #TODO
+                info['class_key'] = class_key
                 info['description'] = ''
                 info['category'] = 'sd'
+                if hasattr(obj_class, 'TITLE'):
+                    info['title'] = obj_class.TITLE
+                if hasattr(obj_class, 'DESCRIPTION'):
+                    info['description'] = obj_class.DESCRIPTION
                 if hasattr(obj_class, 'CATEGORY'):
                     info['category'] = obj_class.CATEGORY
-                out[x] = info
+                if hasattr(obj_class, 'EXTRA_PROPERTIES'):
+                    info['properties'] = obj_class.EXTRA_PROPERTIES
+                out[class_key] = info
             return web.json_response(out)
 
         @routes.get("/history")
@@ -207,7 +213,7 @@ class PromptServer():
                     print("invalid prompt:", valid[1])
 
             return web.Response(body=out_string, status=resp_code)
-        
+
         @routes.post("/queue")
         async def post_queue(request):
             json_data =  await request.json()
@@ -219,7 +225,7 @@ class PromptServer():
                 for id_to_delete in to_delete:
                     delete_func = lambda a: a[1] == int(id_to_delete)
                     self.prompt_queue.delete_queue_item(delete_func)
-                    
+
             return web.Response(status=200)
 
         @routes.post("/interrupt")
@@ -254,7 +260,7 @@ class PromptServer():
 
     async def send(self, event, data, sid=None):
         message = {"type": event, "data": data}
-       
+
         if isinstance(message, str) == False:
             message = json.dumps(message)
 
