@@ -19,11 +19,11 @@
     top: 100px;
     left: 100px;
     min-width: 100px;
-    color: #aaf;
+    color: rgb(0, 0, 255);
     padding: 0;
     box-shadow: 0 0 10px black !important;
-    background-color: #2e2e2e !important;
-	z-index: 10;
+    background-color: #272727 !important;
+	z-index: 1000;
 }
 
 .litegraph.litecontextmenu.dark {
@@ -87,7 +87,7 @@
 
 .litegraph .litemenu-entry,
 .litemenu-title {
-    font-size: 12px;
+    font-size: 18px;
     color: #aaa;
     padding: 0 0 0 4px;
     margin: 2px;
@@ -133,11 +133,12 @@
 }
 
 .litegraph .litemenu-entry.has_submenu {
-    border-right: 2px solid cyan;
+    border-right: 2px solid rgb(251, 255, 0);
 }
 
 .litegraph .litemenu-title {
     color: #dde;
+    text-decoration: underline;
     background-color: #111;
     margin: 0;
     padding: 2px;
@@ -145,8 +146,8 @@
 }
 
 .litegraph .litemenu-entry:hover:not(.disabled):not(.separator) {
-    background-color: #444 !important;
-    color: #eee;
+    background-color: #a0a0a0 !important;
+    color: #284c5b;
     transition: all 0.2s;
 }
 
@@ -179,9 +180,9 @@
     margin-top: 3px;
     min-width: 60px;
     min-height: 1.5em;
-    background-color: black;
+    background-color: rgb(255, 255, 255);
     border: 0;
-    color: white;
+    color: rgb(0, 0, 0);
     padding-left: 10px;
     margin-right: 5px;
 }
@@ -216,7 +217,7 @@
 .litegraph.lite-search-item.generic_type{
     /*background-color: rgba(50, 50, 50, 0.5);*/
     /*color: #DD9;*/
-    color: #999;
+    color: #999999;
     font-style: italic;
 }
 
@@ -250,6 +251,7 @@
 	height: calc( 100% - 20px );
 	margin: auto;
     max-width: 50%;
+    z-index: 100;
 }
 
 .litegraph .dialog.centered {
@@ -447,7 +449,7 @@
 .litegraph .subgraph_property input {
 	width: 140px;
 	color: #999;
-	background-color: #1A1A1A;
+	background-color: #1a1a1a;
 	border-radius: 4px;
 	border: 0;
 	margin-right: 10px;
@@ -488,7 +490,7 @@
 .litegraph .bullet_icon:hover {
 	background-color: #698;
 	cursor: pointer;
-} 
+}
 
 /* OLD */
 
@@ -677,4 +679,4 @@ padding: 4px 18px;
 border-radius: 20px;
 cursor: pointer;
 }
-  
+

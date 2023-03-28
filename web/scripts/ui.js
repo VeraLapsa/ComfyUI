@@ -76,7 +76,7 @@ function dragElement(dragEl, settings) {
 			dragEl.style.left = newPosX + "px";
 			dragEl.style.right = "unset";
 		}
-		
+
 		dragEl.style.top = newPosY + "px";
 		dragEl.style.bottom = "unset";
 
@@ -334,24 +334,24 @@ class ComfyList {
 		}
 	}
 
-	async show() {
+	async show(what = "") {
 		this.element.style.display = "block";
-		this.button.textContent = "Close";
+		this.button.textContent = `Close ${what}`;
 
 		await this.load();
 	}
 
-	hide() {
+	hide(what = "") {
 		this.element.style.display = "none";
-		this.button.textContent = "See " + this.#text;
+		this.button.textContent = `Show ${what}`;
 	}
 
-	toggle() {
+	toggle(what = "") {
 		if (this.visible) {
-			this.hide();
+			this.hide(what);
 			return false;
 		} else {
-			this.show();
+			this.show(what);
 			return true;
 		}
 	}
@@ -394,16 +394,15 @@ export class ComfyUI {
 				onclick: () => app.queuePrompt(0, this.batchCount),
 			}),
 			$el("div", {}, [
-				$el("label", { innerHTML: "Extra options" }, [
-					$el("input", {
-						type: "checkbox",
+				$el("label", { innerHTML: "Extra Options"}, [
+					$el("input", { type: "checkbox",
 						onchange: (i) => {
-							document.getElementById("extraOptions").style.display = i.srcElement.checked ? "block" : "none";
-							this.batchCount = i.srcElement.checked ? document.getElementById("batchCountInputRange").value : 1;
-							document.getElementById("autoQueueCheckbox").checked = false;
-						},
-					}),
-				]),
+							document.getElementById('extraOptions').style.display = i.srcElement.checked ? "block" : "none";
+							this.batchCount = i.srcElement.checked ? document.getElementById('batchCountInputRange').value : 1;
+							document.getElementById('autoQueueCheckbox').checked = false;
+						}
+					})
+				])
 			]),
 			$el("div", { id: "extraOptions", style: { width: "100%", display: "none" } }, [
 				$el("label", { innerHTML: "Batch count" }, [
@@ -435,55 +434,69 @@ export class ComfyUI {
 						checked: false,
 						title: "automatically queue prompt when the queue size hits 0",
 					}),
+					$el("input", { id: "autoQueueCheckbox", type: "checkbox", checked: false, title: "automatically queue prompt when the queue size hits 0",
+					}),
+					$el("button", { textContent: "Skip Queue to\nProcess Next", onclick: () => app.queuePrompt(-1, this.batchCount) }),
 				]),
 			]),
 			$el("div.comfy-menu-btns", [
-				$el("button", { textContent: "Queue Front", onclick: () => app.queuePrompt(-1, this.batchCount) }),
 				$el("button", {
 					$: (b) => (this.queue.button = b),
-					textContent: "View Queue",
+					textContent: "Show Queue",
 					onclick: () => {
-						this.history.hide();
-						this.queue.toggle();
+						// this.history.hide();
+						this.queue.toggle("Queue");
 					},
-				}),
+				})
+			]),
+			this.queue.element,
+			$el("div.comfy-menu-btns", [
 				$el("button", {
 					$: (b) => (this.history.button = b),
-					textContent: "View History",
+					textContent: "Show History",
 					onclick: () => {
-						this.queue.hide();
-						this.history.toggle();
+						// this.queue.hide();
+						this.history.toggle("History");
 					},
 				}),
 			]),
-			this.queue.element,
 			this.history.element,
-			$el("button", {
-				textContent: "Save",
-				onclick: () => {
-					const json = JSON.stringify(app.graph.serialize(), null, 2); // convert the data to a JSON string
-					const blob = new Blob([json], { type: "application/json" });
-					const url = URL.createObjectURL(blob);
-					const a = $el("a", {
-						href: url,
-						download: "workflow.json",
-						style: { display: "none" },
-						parent: document.body,
-					});
-					a.click();
-					setTimeout(function () {
-						a.remove();
-						window.URL.revokeObjectURL(url);
-					}, 0);
-				},
-			}),
-			$el("button", { textContent: "Load", onclick: () => fileInput.click() }),
-			$el("button", { textContent: "Refresh", onclick: () => app.refreshComboInNodes() }),
-			$el("button", { textContent: "Clear", onclick: () => {
-				app.clean();
-				app.graph.clear();
-			}}),
-			$el("button", { textContent: "Load Default", onclick: () => app.loadGraphData() }),
+			$el("div.comfy-titled-menu-btns", [
+				$el("h3.comfy-menu-title",{innerHTML: "Graph I/O"}),
+				$el('hr'),
+				$el("div.comfy-menu-btns", [
+					$el("button", {
+						textContent: "Save",
+						onclick: () => {
+							const json = JSON.stringify(app.graph.serialize(), null, 2); // convert the data to a JSON string
+							const blob = new Blob([json], { type: "application/json" });
+							const url = URL.createObjectURL(blob);
+							const a = $el("a", {
+								href: url,
+								download: `ComfyUI_Graph_${Date.now()}.json`,
+								style: { display: "none" },
+								parent: document.body,
+							});
+							a.click();
+							setTimeout(function () {
+								a.remove();
+								window.URL.revokeObjectURL(url);
+							}, 0);
+						},
+					}),
+					$el("button", { textContent: "Load", onclick: () => fileInput.click() })
+				])
+			]),
+			$el("div.comfy-titled-menu-btns", [
+				$el("h3.comfy-menu-title", {innerHTML: "Graph Ops"}),
+				$el('hr'),
+				$el("div.comfy-menu-btns", [
+					$el("button", { textContent: "Clear Graph", onclick: () => app.graph.clear() }),
+					$el("button", { textContent: "Load Default", onclick: () => app.loadGraphData() })
+				])
+			]),
+
+
 		]);
 
 		dragElement(this.menuContainer, this.settings);

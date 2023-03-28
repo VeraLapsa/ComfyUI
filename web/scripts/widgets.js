@@ -137,7 +137,8 @@ function addMultilineWidget(node, name, opts, app) {
 		}
 	});
 	widget.parent = node;
-	document.body.appendChild(widget.inputEl);
+	let DOMparent = document.getElementById('app-content');
+	DOMparent.appendChild(widget.inputEl);
 
 	node.addCustomWidget(widget);
 
@@ -314,7 +315,8 @@ export const ComfyWidgets = {
 				}
 			},
 		});
-		document.body.append(fileInput);
+		let DOMparent = document.getElementById('app-content');
+		DOMparent.append(fileInput);
 
 		// Create the button widget for selecting the files
 		uploadWidget = node.addWidget("button", "choose file to upload", "image", () => {
