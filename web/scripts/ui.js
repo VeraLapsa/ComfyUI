@@ -76,7 +76,7 @@ function dragElement(dragEl, settings) {
 			dragEl.style.left = newPosX + "px";
 			dragEl.style.right = "unset";
 		}
-		
+
 		dragEl.style.top = newPosY + "px";
 		dragEl.style.bottom = "unset";
 
@@ -394,7 +394,7 @@ export class ComfyUI {
 				onclick: () => app.queuePrompt(0, this.batchCount),
 			}),
 			$el("div", {}, [
-				$el("label", { innerHTML: "Extra options" }, [
+				$el("label", { innerHTML: "Extra Options" }, [
 					$el("input", {
 						type: "checkbox",
 						onchange: (i) => {
@@ -435,6 +435,9 @@ export class ComfyUI {
 						checked: false,
 						title: "automatically queue prompt when the queue size hits 0",
 					}),
+					$el("input", { id: "autoQueueCheckbox", type: "checkbox", checked: false, title: "automatically queue prompt when the queue size hits 0",
+					}),
+					$el("button", { textContent: "Skip Queue to\nProcess Next", onclick: () => app.queuePrompt(-1, this.batchCount) }),
 				]),
 			]),
 			$el("div.comfy-menu-btns", [
