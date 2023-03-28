@@ -212,44 +212,59 @@ def validate_inputs(prompt, item):
     obj_class = nodes.NODE_CLASS_MAPPINGS[class_type]
 
     class_inputs = obj_class.INPUT_TYPES()
-    required_inputs = class_inputs['required']
-    for x in required_inputs:
-        if x not in inputs:
-            return (False, "Required input is missing. {}, {}".format(class_type, x))
-        val = inputs[x]
-        info = required_inputs[x]
-        type_input = info[0]
-        if isinstance(val, list):
-            if len(val) != 2:
-                return (False, "Bad Input. {}, {}".format(class_type, x))
-            o_id = val[0]
-            o_class_type = prompt[o_id]['class_type']
-            r = nodes.NODE_CLASS_MAPPINGS[o_class_type].RETURN_TYPES
-            if r[val[1]] != type_input:
-                return (False, "Return type mismatch. {}, {}, {} != {}".format(class_type, x, r[val[1]], type_input))
-            r = validate_inputs(prompt, o_id)
-            if r[0] == False:
-                return r
-        else:
-            if type_input == "INT":
-                val = int(val)
-                inputs[x] = val
-            if type_input == "FLOAT":
-                val = float(val)
-                inputs[x] = val
-            if type_input == "STRING":
-                val = str(val)
-                inputs[x] = val
 
-            if len(info) > 1:
-                if "min" in info[1] and val < info[1]["min"]:
-                    return (False, "Value smaller than min. {}, {}".format(class_type, x))
-                if "max" in info[1] and val > info[1]["max"]:
-                    return (False, "Value bigger than max. {}, {}".format(class_type, x))
+    def recursive_validate(class_inputs, optional=False):
+        for x in class_inputs:
+            if not optional and x not in inputs:
+                return (False, "Required input is missing. {}, {}".format(class_type, x))
+            elif x not in inputs:
+                return (True, "")
+            val = inputs[x]
+            info = class_inputs[x]
+            type_input = info[0]
+            if isinstance(val, list):
+                if len(val) != 2:
+                    return (False, "Bad Input. {}, {}".format(class_type, x))
+                o_id = val[0]
+                o_class_type = prompt[o_id]['class_type']
+                r = nodes.NODE_CLASS_MAPPINGS[o_class_type].RETURN_TYPES
+                if r[val[1]] != type_input and r[val[1]]["type"] != type_input:
+                    return (False, "Return type mismatch. {}, {}, {} != {}".format(class_type, x, r[val[1]], type_input))
+                r = validate_inputs(prompt, o_id)
+                if r[0] == False:
+                    return r
+            else:
+                if type_input == "INT":
+                    val = int(val)
+                    inputs[x] = val
+                if type_input == "FLOAT":
+                    val = float(val)
+                    inputs[x] = val
+                if type_input == "STRING":
+                    val = str(val)
+                    inputs[x] = val
 
-            if isinstance(type_input, list):
-                if val not in type_input:
-                    return (False, "Value not in list. {}, {}: {} not in {}".format(class_type, x, val, type_input))
+                if len(info) > 1:
+                    if "min" in info[1] and val < info[1]["min"]:
+                        return (False, "Value smaller than min. {}, {}".format(class_type, x))
+                    if "max" in info[1] and val > info[1]["max"]:
+                        return (False, "Value bigger than max. {}, {}".format(class_type, x))
+
+                if isinstance(type_input, list):
+                    if val not in type_input:
+                        return (False, "Value not in list. {}, {}: {} not in {}".format(class_type, x, val, type_input))
+        return (True, "")
+
+    required_class_inputs = recursive_validate(class_inputs['required'])
+    if "optional" in class_inputs:
+        optional_class_inputs = recursive_validate(class_inputs['optional'], True)
+    else:
+        optional_class_inputs = (True, "")
+
+    if not required_class_inputs[0]:
+        return required_class_inputs
+    if not optional_class_inputs[0]:
+        return optional_class_inputs
     return (True, "")
 
 def validate_prompt(prompt):
