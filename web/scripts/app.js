@@ -692,9 +692,10 @@ class ComfyApp {
         await this.#loadExtensions();
 
         // Create and mount the LiteGraph in the DOM
-		const canvasEl = (this.canvasEl = Object.assign(document.createElement("canvas"), { id: "graph-canvas" }));
-		canvasEl.tabIndex = "1";
-		document.body.prepend(canvasEl);
+        const canvasEl = (this.canvasEl = Object.assign(document.createElement("canvas"), { id: "graphcanvas" }));
+        canvasEl.tabIndex = "1";;
+        document.getElementById("app-content").prepend(canvasEl);
+        // document.body.prepend(canvasEl);
 
 		this.#addProcessMouseHandler();
 		this.#addProcessKeyHandler();
@@ -706,8 +707,9 @@ class ComfyApp {
         this.graph.start();
 
         function resizeCanvas() {
-			canvasEl.width = canvasEl.offsetWidth;
-			canvasEl.height = canvasEl.offsetHeight;
+            const parent = canvasEl.offsetParent;
+            canvasEl.width = parent.offsetWidth;
+            canvasEl.height = parent.offsetHeight;
             canvas.draw(true, true);
         }
 
