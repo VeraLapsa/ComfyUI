@@ -649,9 +649,13 @@ class ComfyApp {
             this.graph.setDirtyCanvas(true, false);
         });
 
-        api.addEventListener("executed", ({ detail }) => {
-            this.nodeOutputs[detail.node] = detail.output;
-        });
+		api.addEventListener("executed", ({ detail }) => {
+			this.nodeOutputs[detail.node] = detail.output;
+			const node = this.graph.getNodeById(detail.node);
+			if (node.onExecuted) {
+				node.onExecuted(detail.output);
+			}
+		});
 
         api.init();
     }
@@ -820,23 +824,24 @@ class ComfyApp {
                             }
                         }
 
-                        if (Array.isArray(type)) {
-                            // Enums
-                            Object.assign(config, widgets.COMBO(this, inputName, inputData, app) || {});
-                        } else if (`${type}:${inputName}` in widgets) {
-                            // Support custom widgets by Type:Name
-                            Object.assign(
-                                config,
-                                widgets[`${type}:${inputName}`](this, inputName, inputData, app) || {}
-                            );
-                        } else if (type in widgets) {
-                            // Standard type widgets
-                            Object.assign(config, widgets[type](this, inputName, inputData, app) || {});
-                        } else {
-                            // Node connection inputs
-                            this.addInput(inputName, type, extra_info);
-                        }
-                    }
+						if(inputData[1]?.forceInput) {
+							this.addInput(inputName, type);
+						} else {
+							if (Array.isArray(type)) {
+								// Enums
+								Object.assign(config, widgets.COMBO(this, inputName, inputData, app) || {});
+							} else if (`${type}:${inputName}` in widgets) {
+								// Support custom widgets by Type:Name
+								Object.assign(config, widgets[`${type}:${inputName}`](this, inputName, inputData, app) || {});
+							} else if (type in widgets) {
+								// Standard type widgets
+								Object.assign(config, widgets[type](this, inputName, inputData, app) || {});
+							} else {
+								// Node connection inputs
+								this.addInput(inputName, type);
+							}
+						}
+					}
 
                     for (const output of nodeData["output"]) {
                         if (typeof output === "string") {
