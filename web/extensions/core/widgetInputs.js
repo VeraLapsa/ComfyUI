@@ -185,11 +185,20 @@ app.registerExtension({
 	},
 	registerCustomNodes() {
 		class PrimitiveNode {
+			properties = false
+
 			constructor() {
 				this.addOutput("connect to widget input", "*");
 				this.serialize_widgets = true;
 				this.isVirtualNode = true;
+				this.properties = {
+					horizontal: false
+				};
 			}
+
+			onPropertyChanged(prop, value) {
+				this[prop] = value;
+			};
 
 			applyToGraph() {
 				if (!this.outputs[0].links?.length) return;

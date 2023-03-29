@@ -387,101 +387,108 @@ class ComfyApp {
                 } catch (error) {}
             }
 
-			if (workflow && workflow.version && workflow.nodes && workflow.extra) {
-				this.loadGraphData(workflow);
-			}
-		});
-	}
+            if (workflow && workflow.version && workflow.nodes && workflow.extra) {
+                this.loadGraphData(workflow);
+            }
+        });
+    }
 
-	/**
-	 * Handle mouse
-	 *
-	 * Move group by header
-	 */
-	#addProcessMouseHandler() {
-		const self = this;
+    /**
+     * Handle mouse
+     *
+     * Move group by header
+     */
+    #addProcessMouseHandler() {
+        const self = this;
 
-		const origProcessMouseDown = LGraphCanvas.prototype.processMouseDown;
-		LGraphCanvas.prototype.processMouseDown = function(e) {
-			const res = origProcessMouseDown.apply(this, arguments);
+        const origProcessMouseDown = LGraphCanvas.prototype.processMouseDown;
+        LGraphCanvas.prototype.processMouseDown = function (e) {
+            const res = origProcessMouseDown.apply(this, arguments);
 
-			this.selected_group_moving = false;
+            this.selected_group_moving = false;
 
-			if (this.selected_group && !this.selected_group_resizing) {
-				var font_size =
-					this.selected_group.font_size || LiteGraph.DEFAULT_GROUP_FONT_SIZE;
-				var height = font_size * 1.4;
+            if (this.selected_group && !this.selected_group_resizing) {
+                var font_size = this.selected_group.font_size || LiteGraph.DEFAULT_GROUP_FONT_SIZE;
+                var height = font_size * 1.4;
 
-				// Move group by header
-				if (LiteGraph.isInsideRectangle(e.canvasX, e.canvasY, this.selected_group.pos[0], this.selected_group.pos[1], this.selected_group.size[0], height)) {
-					this.selected_group_moving = true;
-				}
-			}
+                // Move group by header
+                if (
+                    LiteGraph.isInsideRectangle(
+                        e.canvasX,
+                        e.canvasY,
+                        this.selected_group.pos[0],
+                        this.selected_group.pos[1],
+                        this.selected_group.size[0],
+                        height
+                    )
+                ) {
+                    this.selected_group_moving = true;
+                }
+            }
 
-			return res;
-		}
+            return res;
+        };
 
-		const origProcessMouseMove = LGraphCanvas.prototype.processMouseMove;
-		LGraphCanvas.prototype.processMouseMove = function(e) {
-			const orig_selected_group = this.selected_group;
+        const origProcessMouseMove = LGraphCanvas.prototype.processMouseMove;
+        LGraphCanvas.prototype.processMouseMove = function (e) {
+            const orig_selected_group = this.selected_group;
 
-			if (this.selected_group && !this.selected_group_resizing && !this.selected_group_moving) {
-				this.selected_group = null;
-			}
+            if (this.selected_group && !this.selected_group_resizing && !this.selected_group_moving) {
+                this.selected_group = null;
+            }
 
-			const res = origProcessMouseMove.apply(this, arguments);
+            const res = origProcessMouseMove.apply(this, arguments);
 
-			if (orig_selected_group && !this.selected_group_resizing && !this.selected_group_moving) {
-				this.selected_group = orig_selected_group;
-			}
+            if (orig_selected_group && !this.selected_group_resizing && !this.selected_group_moving) {
+                this.selected_group = orig_selected_group;
+            }
 
-			return res;
-		};
-	}
+            return res;
+        };
+    }
 
-	/**
-	 * Draws group header bar
-	 */
-	#addDrawGroupsHandler() {
-		const self = this;
+    /**
+     * Draws group header bar
+     */
+    #addDrawGroupsHandler() {
+        const self = this;
 
-		const origDrawGroups = LGraphCanvas.prototype.drawGroups;
-		LGraphCanvas.prototype.drawGroups = function(canvas, ctx) {
-			if (!this.graph) {
-				return;
-			}
+        const origDrawGroups = LGraphCanvas.prototype.drawGroups;
+        LGraphCanvas.prototype.drawGroups = function (canvas, ctx) {
+            if (!this.graph) {
+                return;
+            }
 
-			var groups = this.graph._groups;
+            var groups = this.graph._groups;
 
-			ctx.save();
-			ctx.globalAlpha = 0.7 * this.editor_alpha;
+            ctx.save();
+            ctx.globalAlpha = 0.7 * this.editor_alpha;
 
-			for (var i = 0; i < groups.length; ++i) {
-				var group = groups[i];
+            for (var i = 0; i < groups.length; ++i) {
+                var group = groups[i];
 
-				if (!LiteGraph.overlapBounding(this.visible_area, group._bounding)) {
-					continue;
-				} //out of the visible area
+                if (!LiteGraph.overlapBounding(this.visible_area, group._bounding)) {
+                    continue;
+                } //out of the visible area
 
-				ctx.fillStyle = group.color || "#335";
-				ctx.strokeStyle = group.color || "#335";
-				var pos = group._pos;
-				var size = group._size;
-				ctx.globalAlpha = 0.25 * this.editor_alpha;
-				ctx.beginPath();
-				var font_size =
-					group.font_size || LiteGraph.DEFAULT_GROUP_FONT_SIZE;
-				ctx.rect(pos[0] + 0.5, pos[1] + 0.5, size[0], font_size * 1.4);
-				ctx.fill();
-				ctx.globalAlpha = this.editor_alpha;
-			}
+                ctx.fillStyle = group.color || "#335";
+                ctx.strokeStyle = group.color || "#335";
+                var pos = group._pos;
+                var size = group._size;
+                ctx.globalAlpha = 0.25 * this.editor_alpha;
+                ctx.beginPath();
+                var font_size = group.font_size || LiteGraph.DEFAULT_GROUP_FONT_SIZE;
+                ctx.rect(pos[0] + 0.5, pos[1] + 0.5, size[0], font_size * 1.4);
+                ctx.fill();
+                ctx.globalAlpha = this.editor_alpha;
+            }
 
-			ctx.restore();
+            ctx.restore();
 
-			const res = origDrawGroups.apply(this, arguments);
-			return res;
-		}
-	}
+            const res = origDrawGroups.apply(this, arguments);
+            return res;
+        };
+    }
 
     /**
      * Draws node highlights (executing, drag drop) and progress bar
@@ -611,11 +618,11 @@ class ComfyApp {
 
         // Create and mount the LiteGraph in the DOM
         const canvasEl = (this.canvasEl = Object.assign(document.createElement("canvas"), { id: "graphcanvas" }));
-        canvasEl.tabIndex = "1";;
+        canvasEl.tabIndex = "1";
         document.getElementById("app-content").prepend(canvasEl);
         // document.body.prepend(canvasEl);
 
-		this.#addProcessMouseHandler();
+        this.#addProcessMouseHandler();
 
         this.graph = new LGraph();
         const canvas = (this.canvas = new LGraphCanvas(canvasEl, this.graph));
@@ -637,18 +644,18 @@ class ComfyApp {
         await this.#invokeExtensionsAsync("init");
         await this.registerNodes();
 
-		// Load previous workflow
-		let restored = false;
-		try {
-			const json = localStorage.getItem("workflow");
-			if (json) {
-				const workflow = JSON.parse(json);
-				this.loadGraphData(workflow);
-				restored = true;
-			}
-		} catch (err) {
-			console.error("Error loading previous workflow", err);
-		}
+        // Load previous workflow
+        let restored = false;
+        try {
+            const json = localStorage.getItem("workflow");
+            if (json) {
+                const workflow = JSON.parse(json);
+                this.loadGraphData(workflow);
+                restored = true;
+            }
+        } catch (err) {
+            console.error("Error loading previous workflow", err);
+        }
 
         // We failed to restore a workflow so load the default
         if (!restored) {
@@ -658,12 +665,12 @@ class ComfyApp {
         // Save current workflow automatically
         setInterval(() => localStorage.setItem("workflow", JSON.stringify(this.graph.serialize())), 1000);
 
-		this.#addDrawNodeHandler();
-		this.#addDrawGroupsHandler();
-		this.#addApiUpdateHandlers();
-		this.#addDropHandler();
-		this.#addPasteHandler();
-		this.#addKeyboardHandler();
+        this.#addDrawNodeHandler();
+        this.#addDrawGroupsHandler();
+        this.#addApiUpdateHandlers();
+        this.#addDropHandler();
+        this.#addPasteHandler();
+        this.#addKeyboardHandler();
 
         await this.#invokeExtensionsAsync("setup");
     }
@@ -716,8 +723,14 @@ class ComfyApp {
                     this.properties.horizontal = Boolean(this.properties.horizontal || false);
                     // Lets a node maker set the min width and height. Removes them from properties so it doesn't propagate to the info modal.
                     const config = {
-                        minWidth: this.properties?.minWidth && typeof this.properties?.minWidth === "number" ? this.properties.minWidth : 1,
-                        minHeight: this.properties?.minHeight && typeof this.properties?.minHeight === "number" ? this.properties.minHeight : 1
+                        minWidth:
+                            this.properties?.minWidth && typeof this.properties?.minWidth === "number"
+                                ? this.properties.minWidth
+                                : 1,
+                        minHeight:
+                            this.properties?.minHeight && typeof this.properties?.minHeight === "number"
+                                ? this.properties.minHeight
+                                : 1,
                     };
                     delete this.properties.minHeight;
                     delete this.properties.minWidth;
@@ -781,6 +794,7 @@ class ComfyApp {
 
                     this.onPropertyChanged = (prop, value) => {
                         this[prop] = value;
+                        this.graph.setDirtyCanvas(true, true);
                     };
 
                     app.#invokeExtensionsAsync("nodeCreated", this);
@@ -807,16 +821,16 @@ class ComfyApp {
         await this.#invokeExtensionsAsync("registerCustomNodes");
     }
 
-	/**
-	 * Populates the graph with the specified workflow data
-	 * @param {*} graphData A serialized graph object
-	 */
-	loadGraphData(graphData) {
-		this.clean();
+    /**
+     * Populates the graph with the specified workflow data
+     * @param {*} graphData A serialized graph object
+     */
+    loadGraphData(graphData) {
+        this.clean();
 
-		if (!graphData) {
-			graphData = defaultGraph;
-		}
+        if (!graphData) {
+            graphData = defaultGraph;
+        }
 
         // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
         for (let n of graphData.nodes) {
@@ -849,24 +863,24 @@ class ComfyApp {
         }
     }
 
-	/**
-	 * Converts the current graph workflow for sending to the API
-	 * @returns The workflow and node links
-	 */
-	async graphToPrompt() {
-		const workflow = this.graph.serialize();
-		const output = {};
-		// Process nodes in order of execution
-		for (const node of this.graph.computeExecutionOrder(false)) {
-			const n = workflow.nodes.find((n) => n.id === node.id);
+    /**
+     * Converts the current graph workflow for sending to the API
+     * @returns The workflow and node links
+     */
+    async graphToPrompt() {
+        const workflow = this.graph.serialize();
+        const output = {};
+        // Process nodes in order of execution
+        for (const node of this.graph.computeExecutionOrder(false)) {
+            const n = workflow.nodes.find((n) => n.id === node.id);
 
-			if (node.isVirtualNode) {
-				// Don't serialize frontend only nodes but let them make changes
-				if (node.applyToGraph) {
-					node.applyToGraph(workflow);
-				}
-				continue;
-			}
+            if (node.isVirtualNode) {
+                // Don't serialize frontend only nodes but let them make changes
+                if (node.applyToGraph) {
+                    node.applyToGraph(workflow);
+                }
+                continue;
+            }
 
             const inputs = {};
             const widgets = node.widgets;
@@ -881,19 +895,19 @@ class ComfyApp {
                 }
             }
 
-			// Store all node links
-			for (let i in node.inputs) {
-				let parent = node.getInputNode(i);
-				if (parent) {
-					let link = node.getInputLink(i);
-					while (parent && parent.isVirtualNode) {
-						link = parent.getInputLink(link.origin_slot);
-						if (link) {
-							parent = parent.getInputNode(link.origin_slot);
-						} else {
-							parent = null;
-						}
-					}
+            // Store all node links
+            for (let i in node.inputs) {
+                let parent = node.getInputNode(i);
+                if (parent) {
+                    let link = node.getInputLink(i);
+                    while (parent && parent.isVirtualNode) {
+                        link = parent.getInputLink(link.origin_slot);
+                        if (link) {
+                            parent = parent.getInputNode(link.origin_slot);
+                        } else {
+                            parent = null;
+                        }
+                    }
 
                     if (link) {
                         inputs[node.inputs[i].name] = [String(link.origin_id), parseInt(link.origin_slot)];
@@ -962,47 +976,47 @@ class ComfyApp {
         }
     }
 
-	registerExtension(extension) {
-		if (!extension.name) {
-			throw new Error("Extensions must have a 'name' property.");
-		}
-		if (this.extensions.find((ext) => ext.name === extension.name)) {
-			throw new Error(`Extension named '${extension.name}' already registered.`);
-		}
-		this.extensions.push(extension);
-	}
+    registerExtension(extension) {
+        if (!extension.name) {
+            throw new Error("Extensions must have a 'name' property.");
+        }
+        if (this.extensions.find((ext) => ext.name === extension.name)) {
+            throw new Error(`Extension named '${extension.name}' already registered.`);
+        }
+        this.extensions.push(extension);
+    }
 
-	/**
-	 * Refresh combo list on whole nodes
-	 */
-	async refreshComboInNodes() {
-		const defs = await api.getNodeDefs();
+    /**
+     * Refresh combo list on whole nodes
+     */
+    async refreshComboInNodes() {
+        const defs = await api.getNodeDefs();
 
-		for(let nodeNum in this.graph._nodes) {
-			const node = this.graph._nodes[nodeNum];
+        for (let nodeNum in this.graph._nodes) {
+            const node = this.graph._nodes[nodeNum];
 
-			const def = defs[node.type];
+            const def = defs[node.type];
 
-			for(const widgetNum in node.widgets) {
-				const widget = node.widgets[widgetNum]
+            for (const widgetNum in node.widgets) {
+                const widget = node.widgets[widgetNum];
 
-				if(widget.type == "combo" && def["input"]["required"][widget.name] !== undefined) {
-					widget.options.values = def["input"]["required"][widget.name][0];
+                if (widget.type == "combo" && def["input"]["required"][widget.name] !== undefined) {
+                    widget.options.values = def["input"]["required"][widget.name][0];
 
-					if(!widget.options.values.includes(widget.value)) {
-						widget.value = widget.options.values[0];
-					}
-				}
-			}
-		}
-	}
+                    if (!widget.options.values.includes(widget.value)) {
+                        widget.value = widget.options.values[0];
+                    }
+                }
+            }
+        }
+    }
 
-	/**
-	 * Clean current state
-	 */
-	clean() {
-		this.nodeOutputs = {};
-	}
+    /**
+     * Clean current state
+     */
+    clean() {
+        this.nodeOutputs = {};
+    }
 }
 
 export const app = new ComfyApp();
