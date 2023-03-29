@@ -12001,7 +12001,7 @@ LGraphNode.prototype.executeAction = function(action)
                 if (root.onClose && typeof root.onClose == "function"){
                     root.onClose();
                 }
-                root.parentNode.removeChild(root);
+                root.parentNode?.removeChild(root);
                 /* XXX CHECK THIS */
                 if(this.parentNode){
                     this.parentNode.removeChild(this);
