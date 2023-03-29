@@ -4656,10 +4656,12 @@
         if (this.horizontal) {
             out[0] =
                 this.pos[0] + (slot_number + 0.5) * (this.size[0] / num_slots);
-            if (is_input) {
-                out[1] = this.pos[1] - LiteGraph.NODE_TITLE_HEIGHT;
-            } else {
+            if (!is_input) {
                 out[1] = this.pos[1] + this.size[1];
+            } else if (this?.title_mode == LiteGraph.NO_TITLE) {
+                out[1] = this.pos[1];
+            } else {
+                out[1] = this.pos[1] - LiteGraph.NODE_TITLE_HEIGHT;
             }
             return out;
         }
