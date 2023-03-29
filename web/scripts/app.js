@@ -713,7 +713,7 @@ class ComfyApp {
                     Object.assign(inputs, opt_inputs);
                     this.description = nodeData.description || "";
                     this.properties = { ...nodeData.properties };
-                    this.horizontal = this.properties.horizontal  || false;
+                    this.properties.horizontal = Boolean(this.properties.horizontal || false);
                     // Lets a node maker set the min width and height. Removes them from properties so it doesn't propagate to the info modal.
                     const config = {
                         minWidth: this.properties?.minWidth && typeof this.properties?.minWidth === "number" ? this.properties.minWidth : 1,
