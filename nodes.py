@@ -161,7 +161,13 @@ class VAEEncodeForInpaint:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "pixels": ("IMAGE", ), "vae": ("VAE", ), "mask": ("MASK", )}}
+        return {
+            "required": {
+                "pixels": ("IMAGE", ),
+                "vae": ("VAE", ),
+                "mask": ("MASK", )
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "encode"
 
@@ -192,8 +198,12 @@ class VAEEncodeForInpaint:
 class CheckpointLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "config_name": (folder_paths.get_filename_list("configs"), ),
-                              "ckpt_name": (folder_paths.get_filename_list("checkpoints"), )}}
+        return {
+            "required": {
+                "config_name": (folder_paths.get_filename_list("configs"), ),
+                "ckpt_name": (folder_paths.get_filename_list("checkpoints"), )
+            }
+        }
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
 
@@ -207,8 +217,11 @@ class CheckpointLoader:
 class CheckpointLoaderSimple:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "ckpt_name": (folder_paths.get_filename_list("checkpoints"), ),
-                             }}
+        return {
+            "required": {
+                "ckpt_name": (folder_paths.get_filename_list("checkpoints"), )
+            }
+        }
     RETURN_TYPES = ("MODEL", "CLIP", "VAE")
     FUNCTION = "load_checkpoint"
 
@@ -222,9 +235,17 @@ class CheckpointLoaderSimple:
 class CLIPSetLastLayer:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip": ("CLIP", ),
-                              "stop_at_clip_layer": ("INT", {"default": -1, "min": -24, "max": -1, "step": 1}),
-                              }}
+        return {
+            "required": {
+                "clip": ("CLIP", ),
+                "stop_at_clip_layer": ("INT", {
+                    "default": -1,
+                    "min": -24,
+                    "max": -1,
+                    "step": 1
+                })
+            }
+        }
     RETURN_TYPES = ("CLIP",)
     FUNCTION = "set_last_layer"
 
@@ -238,12 +259,25 @@ class CLIPSetLastLayer:
 class LoraLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "model": ("MODEL",),
-                              "clip": ("CLIP", ),
-                              "lora_name": (folder_paths.get_filename_list("loras"), ),
-                              "strength_model": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
-                              "strength_clip": ("FLOAT", {"default": 1.0, "min": -10.0, "max": 10.0, "step": 0.01}),
-                              }}
+        return {
+            "required": {
+                "model": ("MODEL", ),
+                "clip": ("CLIP", ),
+                "lora_name": (folder_paths.get_filename_list("loras"), ),
+                "strength_model": ("FLOAT", {
+                    "default": 1.0,
+                    "min": -10.0,
+                    "max": 10.0,
+                    "step": 0.01
+                }),
+                "strength_clip": ("FLOAT", {
+                    "default": 1.0,
+                    "min": -10.0,
+                    "max": 10.0,
+                    "step": 0.01
+                })
+            }
+        }
     RETURN_TYPES = ("MODEL", "CLIP")
     FUNCTION = "load_lora"
 
@@ -304,11 +338,19 @@ class DiffControlNetLoader:
 class ControlNetApply:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"conditioning": ("CONDITIONING", ),
-                             "control_net": ("CONTROL_NET", ),
-                             "image": ("IMAGE", ),
-                             "strength": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 10.0, "step": 0.01})
-                             }}
+        return {
+            "required": {
+                "conditioning": ("CONDITIONING", ),
+                "control_net": ("CONTROL_NET", ),
+                "image": ("IMAGE", ),
+                "strength": ("FLOAT", {
+                    "default": 1.0,
+                    "min": 0.0,
+                    "max": 10.0,
+                    "step": 0.01
+                })
+            }
+        }
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "apply_controlnet"
 
@@ -360,9 +402,12 @@ class CLIPVisionLoader:
 class CLIPVisionEncode:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "clip_vision": ("CLIP_VISION",),
-                              "image": ("IMAGE",)
-                             }}
+        return {
+            "required": {
+                "clip_vision": ("CLIP_VISION", ),
+                "image": ("IMAGE", )
+            }
+        }
     RETURN_TYPES = ("CLIP_VISION_OUTPUT",)
     FUNCTION = "encode"
 
@@ -375,7 +420,12 @@ class CLIPVisionEncode:
 class StyleModelLoader:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "style_model_name": (folder_paths.get_filename_list("style_models"), )}}
+        return {
+            "required": {
+                "style_model_name":
+                (folder_paths.get_filename_list("style_models"), )
+            }
+        }
 
     RETURN_TYPES = ("STYLE_MODEL",)
     FUNCTION = "load_style_model"
@@ -391,10 +441,13 @@ class StyleModelLoader:
 class StyleModelApply:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": {"conditioning": ("CONDITIONING", ),
-                             "style_model": ("STYLE_MODEL", ),
-                             "clip_vision_output": ("CLIP_VISION_OUTPUT", ),
-                             }}
+        return {
+            "required": {
+                "conditioning": ("CONDITIONING", ),
+                "style_model": ("STYLE_MODEL", ),
+                "clip_vision_output": ("CLIP_VISION_OUTPUT", ),
+            }
+        }
     RETURN_TYPES = ("CONDITIONING",)
     FUNCTION = "apply_stylemodel"
 
@@ -414,9 +467,27 @@ class EmptyLatentImage:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "width": ("INT", {"default": 512, "min": 64, "max": MAX_RESOLUTION, "step": 64}),
-                              "height": ("INT", {"default": 512, "min": 64, "max": MAX_RESOLUTION, "step": 64}),
-                              "batch_size": ("INT", {"default": 1, "min": 1, "max": 64})}}
+        return {
+            "required": {
+                "width": ("INT", {
+                    "default": 512,
+                    "min": 64,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "height": ("INT", {
+                    "default": 512,
+                    "min": 64,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "batch_size": ("INT", {
+                    "default": 1,
+                    "min": 1,
+                    "max": 64
+                })
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "generate"
 
@@ -434,10 +505,25 @@ class LatentUpscale:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "samples": ("LATENT",), "upscale_method": (s.upscale_methods,),
-                              "width": ("INT", {"default": 512, "min": 64, "max": MAX_RESOLUTION, "step": 64}),
-                              "height": ("INT", {"default": 512, "min": 64, "max": MAX_RESOLUTION, "step": 64}),
-                              "crop": (s.crop_methods,)}}
+        return {
+            "required": {
+                "samples": ("LATENT", ),
+                "upscale_method": (s.upscale_methods, ),
+                "width": ("INT", {
+                    "default": 512,
+                    "min": 64,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "height": ("INT", {
+                    "default": 512,
+                    "min": 64,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "crop": (s.crop_methods, )
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "upscale"
 
@@ -451,9 +537,13 @@ class LatentUpscale:
 class LatentRotate:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "samples": ("LATENT",),
-                              "rotation": (["none", "90 degrees", "180 degrees", "270 degrees"],),
-                              }}
+        return {
+            "required": {
+                "samples": ("LATENT", ),
+                "rotation":
+                (["none", "90 degrees", "180 degrees", "270 degrees"], ),
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "rotate"
 
@@ -475,9 +565,13 @@ class LatentRotate:
 class LatentFlip:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "samples": ("LATENT",),
-                              "flip_method": (["x-axis: vertically", "y-axis: horizontally"],),
-                              }}
+        return {
+            "required": {
+                "samples": ("LATENT", ),
+                "flip_method": (["x-axis: vertically",
+                                 "y-axis: horizontally"], ),
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "flip"
 
@@ -495,12 +589,30 @@ class LatentFlip:
 class LatentComposite:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "samples_to": ("LATENT",),
-                              "samples_from": ("LATENT",),
-                              "x": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                              "y": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                              "feather": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                              }}
+        return {
+            "required": {
+                "samples_to": ("LATENT", ),
+                "samples_from": ("LATENT", ),
+                "x": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8
+                }),
+                "y": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8
+                }),
+                "feather": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8
+                }),
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "composite"
 
@@ -537,12 +649,35 @@ class LatentComposite:
 class LatentCrop:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "samples": ("LATENT",),
-                              "width": ("INT", {"default": 512, "min": 64, "max": MAX_RESOLUTION, "step": 64}),
-                              "height": ("INT", {"default": 512, "min": 64, "max": MAX_RESOLUTION, "step": 64}),
-                              "x": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                              "y": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 8}),
-                              }}
+        return {
+            "required": {
+                "samples": ("LATENT", ),
+                "width": ("INT", {
+                    "default": 512,
+                    "min": 64,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "height": ("INT", {
+                    "default": 512,
+                    "min": 64,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "x": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8
+                }),
+                "y": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 8
+                }),
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "crop"
 
@@ -580,9 +715,12 @@ class LatentCrop:
 class SetLatentNoiseMask:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "samples": ("LATENT",),
-                              "mask": ("MASK",),
-                              }}
+        return {
+            "required": {
+                "samples": ("LATENT", ),
+                "mask": ("MASK", ),
+            }
+        }
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "set_mask"
 
@@ -663,18 +801,37 @@ def common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, 
 class KSampler:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
-                    {"model": ("MODEL",),
-                    "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                    "steps": ("INT", {"default": 20, "min": 1, "max": 10000}),
-                    "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0}),
-                    "sampler_name": (comfy.samplers.KSampler.SAMPLERS, ),
-                    "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
-                    "positive": ("CONDITIONING", ),
-                    "negative": ("CONDITIONING", ),
-                    "latent_image": ("LATENT", ),
-                    "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
-                    }}
+        return {
+            "required": {
+                "model": ("MODEL", ),
+                "seed": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 0xffffffffffffffff
+                }),
+                "steps": ("INT", {
+                    "default": 20,
+                    "min": 1,
+                    "max": 10000
+                }),
+                "cfg": ("FLOAT", {
+                    "default": 8.0,
+                    "min": 0.0,
+                    "max": 100.0
+                }),
+                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, ),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "positive": ("CONDITIONING", ),
+                "negative": ("CONDITIONING", ),
+                "latent_image": ("LATENT", ),
+                "denoise": ("FLOAT", {
+                    "default": 1.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "step": 0.01
+                }),
+            }
+        }
 
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "sample"
@@ -687,21 +844,43 @@ class KSampler:
 class KSamplerAdvanced:
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
-                    {"model": ("MODEL",),
-                    "add_noise": (["enable", "disable"], ),
-                    "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                    "steps": ("INT", {"default": 20, "min": 1, "max": 10000}),
-                    "cfg": ("FLOAT", {"default": 8.0, "min": 0.0, "max": 100.0}),
-                    "sampler_name": (comfy.samplers.KSampler.SAMPLERS, ),
-                    "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
-                    "positive": ("CONDITIONING", ),
-                    "negative": ("CONDITIONING", ),
-                    "latent_image": ("LATENT", ),
-                    "start_at_step": ("INT", {"default": 0, "min": 0, "max": 10000}),
-                    "end_at_step": ("INT", {"default": 10000, "min": 0, "max": 10000}),
-                    "return_with_leftover_noise": (["disable", "enable"], ),
-                    }}
+        return {
+            "required": {
+                "model": ("MODEL", ),
+                "add_noise": (["enable", "disable"], ),
+                "noise_seed": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 0xffffffffffffffff
+                }),
+                "steps": ("INT", {
+                    "default": 20,
+                    "min": 1,
+                    "max": 10000
+                }),
+                "cfg": ("FLOAT", {
+                    "default": 8.0,
+                    "min": 0.0,
+                    "max": 100.0
+                }),
+                "sampler_name": (comfy.samplers.KSampler.SAMPLERS, ),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
+                "positive": ("CONDITIONING", ),
+                "negative": ("CONDITIONING", ),
+                "latent_image": ("LATENT", ),
+                "start_at_step": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": 10000
+                }),
+                "end_at_step": ("INT", {
+                    "default": 10000,
+                    "min": 0,
+                    "max": 10000
+                }),
+                "return_with_leftover_noise": (["disable", "enable"], ),
+            }
+        }
 
     RETURN_TYPES = ("LATENT",)
     FUNCTION = "sample"
@@ -724,11 +903,18 @@ class SaveImage:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": 
-                    {"images": ("IMAGE", ),
-                     "filename_prefix": ("STRING", {"default": "ComfyUI"})},
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
-                }
+        return {
+            "required": {
+                "images": ("IMAGE", ),
+                "filename_prefix": ("STRING", {
+                    "default": "ComfyUI"
+                })
+            },
+            "hidden": {
+                "prompt": "PROMPT",
+                "extra_pnginfo": "EXTRA_PNGINFO"
+            },
+        }
 
     RETURN_TYPES = ()
     FUNCTION = "save_images"
@@ -803,10 +989,15 @@ class PreviewImage(SaveImage):
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
-                    {"images": ("IMAGE", ), },
-                "hidden": {"prompt": "PROMPT", "extra_pnginfo": "EXTRA_PNGINFO"},
-                }
+        return {
+            "required": {
+                "images": ("IMAGE", ),
+            },
+            "hidden": {
+                "prompt": "PROMPT",
+                "extra_pnginfo": "EXTRA_PNGINFO"
+            },
+        }
 
 class LoadImage:
     input_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "input")
@@ -847,10 +1038,12 @@ class LoadImageMask:
     input_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "input")
     @classmethod
     def INPUT_TYPES(s):
-        return {"required":
-                    {"image": (sorted(os.listdir(s.input_dir)), ),
-                    "channel": (["alpha", "red", "green", "blue"], ),}
-                }
+        return {
+            "required": {
+                "image": (sorted(os.listdir(s.input_dir)), ),
+                "channel": (["alpha", "red", "green", "blue"], ),
+            }
+        }
 
     CATEGORY = "image"
 
@@ -884,10 +1077,25 @@ class ImageScale:
 
     @classmethod
     def INPUT_TYPES(s):
-        return {"required": { "image": ("IMAGE",), "upscale_method": (s.upscale_methods,),
-                              "width": ("INT", {"default": 512, "min": 1, "max": MAX_RESOLUTION, "step": 1}),
-                              "height": ("INT", {"default": 512, "min": 1, "max": MAX_RESOLUTION, "step": 1}),
-                              "crop": (s.crop_methods,)}}
+        return {
+            "required": {
+                "image": ("IMAGE", ),
+                "upscale_method": (s.upscale_methods, ),
+                "width": ("INT", {
+                    "default": 512,
+                    "min": 1,
+                    "max": MAX_RESOLUTION,
+                    "step": 1
+                }),
+                "height": ("INT", {
+                    "default": 512,
+                    "min": 1,
+                    "max": MAX_RESOLUTION,
+                    "step": 1
+                }),
+                "crop": (s.crop_methods, )
+            }
+        }
     RETURN_TYPES = ("IMAGE",)
     FUNCTION = "upscale"
 
@@ -921,12 +1129,37 @@ class ImagePadForOutpaint:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "image": ("IMAGE",),
-                "left": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 64}),
-                "top": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 64}),
-                "right": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 64}),
-                "bottom": ("INT", {"default": 0, "min": 0, "max": MAX_RESOLUTION, "step": 64}),
-                "feathering": ("INT", {"default": 40, "min": 0, "max": MAX_RESOLUTION, "step": 1}),
+                "image": ("IMAGE", ),
+                "left": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "top": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "right": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "bottom": ("INT", {
+                    "default": 0,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 64
+                }),
+                "feathering": ("INT", {
+                    "default": 40,
+                    "min": 0,
+                    "max": MAX_RESOLUTION,
+                    "step": 1
+                }),
             }
         }
 
