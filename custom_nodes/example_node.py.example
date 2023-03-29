@@ -4,13 +4,18 @@ class Example:
 
     Class methods
     -------------
-    INPUT_TYPES (dict): 
+    INPUT_TYPES (dict):
         Tell the main program input parameters of nodes.
 
     Attributes
     ----------
-    RETURN_TYPES (`tuple`): 
+    RETURN_TYPES (`tuple`|| tuple[dict[str, Any]]):
         The type of each element in the output tulple.
+        tuple[dict[str, Any]] has to have at minium {'type': `str`}
+        For Example:
+            RETURN_TYPES = ({"type": "MODEL", "label": "Model Out", "extra_info": {"shape": "GRID_SHAPE"}},)
+        "Shapes":
+            GRID_SHAPE, BOX_SHAPE, ARROW_SHAPE, CIRCLE_SHAPE(default)
     FUNCTION (`str`):
         The name of the entry-point method. For example, if `FUNCTION = "execute"` then it will run Example().execute()
     OUTPUT_NODE ([`bool`]):
@@ -18,14 +23,27 @@ class Example:
         The backend iterates on these output nodes and tries to execute all their parents if their parent graph is properly connected.
         Assumed to be False if not present.
     CATEGORY (`str`):
-        The category the node should appear in the UI.
+        The category the node should appear in the UI. '/'s add a submenu
+    TITLE (`str`):
+        The title of the node. optional, defaults to the key your class set in NODE_CLASS_MAPPINGS
+    EXTRA_PROPERTIES (dict[`str`, Any]):
+        default properties like if it's a horizontal node or the min Height/Width when adding the node to the graph
+        For Example:
+            EXTRA_PROPERTIES = {
+                "horizontal": True,
+                "minHeight": 300,
+                "minWidth": 300
+            }
+            Would make a square node with it's inputs on the to and outputs on the bottom
+    DESCRIPTION (`str`):
+        Not used in the UI atm. Looking to add it as a tool tip in the future.
     execute(s) -> tuple || None:
         The entry point method. The name of this method must be the same as the value of property `FUNCTION`.
         For example, if `FUNCTION = "execute"` then this method's name must be `execute`, if `FUNCTION = "foo"` then it must be `foo`.
     """
     def __init__(self):
         pass
-    
+
     @classmethod
     def INPUT_TYPES(s):
         """
@@ -35,7 +53,10 @@ class Example:
             The type can be a list for selection.
 
             Returns: `dict`:
-                - Key input_fields_group (`string`): Can be either required, hidden or optional. A node class must have property `required`
+                - Key input_fields_group (`string`): Can be either required, hidden or optional.
+                    The default shape of an optional input is BOX_SHAPE as compared to the default circle for required inputs.
+                    Optional Inputs are added to the end of the "execute" function's arguments.
+                    A node class must have property `required`
                 - Value input_fields (`dict`): Contains input fields config:
                     * Key field_name (`string`): Name of a entry-point method's argument
                     * Value field_config (`tuple`):
@@ -46,7 +67,7 @@ class Example:
             "required": {
                 "image": ("IMAGE",),
                 "int_field": ("INT", {
-                    "default": 0, 
+                    "default": 0,
                     "min": 0, #Minimum value
                     "max": 4096, #Maximum value
                     "step": 64 #Slider's step
@@ -58,6 +79,11 @@ class Example:
                     "default": "Hello World!"
                 }),
             },
+            "optional": {
+                "int_field_ovrd": ("INT", {
+                    "label": "int_field Override"
+                }),
+            },
         }
 
     RETURN_TYPES = ("IMAGE",)
@@ -65,9 +91,12 @@ class Example:
 
     #OUTPUT_NODE = False
 
+    TITLE = "Example Node"
     CATEGORY = "Example"
 
-    def test(self, image, string_field, int_field, float_field, print_to_screen):
+    def test(self, image, string_field, int_field, float_field, print_to_screen, int_field_ovrd=None):
+        if(int_field_ovrd is not None):
+            # Do something with the optional input
         if print_to_screen == "enable":
             print(f"""Your input contains:
                 string_field aka input text: {string_field}
