@@ -903,9 +903,9 @@ class ComfyApp {
     loadGraphData(graphData) {
         this.clean();
 
-        if (!graphData) {
-            graphData = defaultGraph;
-        }
+		if (!graphData) {
+			graphData = structuredClone(defaultGraph);
+		}
 
         // Patch T2IAdapterLoader to ControlNetLoader since they are the same node now
         for (let n of graphData.nodes) {
