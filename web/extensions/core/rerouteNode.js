@@ -31,33 +31,40 @@ class RerouteNode {
                 }
             }
 
-            // Find root input
-            let currentNode = this;
-            let updateNodes = [];
-            let inputType = null;
-            let inputNode = null;
-            while (currentNode) {
-                updateNodes.unshift(currentNode);
-                const linkId = currentNode.inputs[0].link;
-                if (linkId !== null) {
-                    const link = app.graph.links[linkId];
-                    const node = app.graph.getNodeById(link.origin_id);
-                    const type = node.constructor.type;
-                    if (type === "Reroute") {
-                        // Move the previous node
-                        currentNode = node;
-                    } else {
-                        // We've found the end
-                        inputNode = currentNode;
-                        inputType = node.outputs[link.origin_slot].type;
-                        break;
-                    }
-                } else {
-                    // This path has no input node
-                    currentNode = null;
-                    break;
-                }
-            }
+					// Find root input
+					let currentNode = this;
+					let updateNodes = [];
+					let inputType = null;
+					let inputNode = null;
+					while (currentNode) {
+						updateNodes.unshift(currentNode);
+						const linkId = currentNode.inputs[0].link;
+						if (linkId !== null) {
+							const link = app.graph.links[linkId];
+							const node = app.graph.getNodeById(link.origin_id);
+							const type = node.constructor.type;
+							if (type === "Reroute") {
+								if (node === this) {
+									// We've found a circle
+									currentNode.disconnectInput(link.target_slot);
+									currentNode = null;
+								}
+								else {
+								// Move the previous node
+									currentNode = node;
+								}
+							} else {
+								// We've found the end
+								inputNode = currentNode;
+								inputType = node.outputs[link.origin_slot].type;
+								break;
+							}
+						} else {
+							// This path has no input node
+							currentNode = null;
+							break;
+						}
+					}
 
             // Find all outputs
             const nodes = [this];
