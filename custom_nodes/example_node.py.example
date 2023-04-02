@@ -16,6 +16,8 @@ class Example:
             RETURN_TYPES = ({"type": "MODEL", "label": "Model Out", "extra_info": {"shape": "GRID_SHAPE"}},)
         "Shapes":
             GRID_SHAPE, BOX_SHAPE, ARROW_SHAPE, CIRCLE_SHAPE(default)
+    RETURN_NAMES (`tuple`):
+        Optional: The name of each output in the output tulple.
     FUNCTION (`str`):
         The name of the entry-point method. For example, if `FUNCTION = "execute"` then it will run Example().execute()
     OUTPUT_NODE ([`bool`]):
@@ -87,6 +89,8 @@ class Example:
         }
 
     RETURN_TYPES = ("IMAGE",)
+    #RETURN_NAMES = ("image_output_name",)
+
     FUNCTION = "test"
 
     #OUTPUT_NODE = False
