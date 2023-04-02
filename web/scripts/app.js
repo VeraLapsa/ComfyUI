@@ -794,7 +794,7 @@ class ComfyApp {
 
                     this.onPropertyChanged = (prop, value) => {
                         this[prop] = value;
-                        this.graph.setDirtyCanvas(true, true);
+                        this.graph?.setDirtyCanvas(true, true);
                     };
 
                     app.#invokeExtensionsAsync("nodeCreated", this);
